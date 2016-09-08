@@ -88,11 +88,25 @@ public class ToDoDatabaseTest {
         System.out.println("Found " + todos.size() + " todos in the database");
 
         assertTrue("There should be at least 2 todos in the database (there are " +
-                todos.size() + ")", todos.size() > 1);
+                todos.size() + ")", todos.size() >= 2);
 
         todoDatabase.deleteToDo(conn, firstToDoText);
         todoDatabase.deleteToDo(conn, secondToDoText);
     }
 
+    @Test
+    public void testToggleToDo() throws Exception {
+        Connection conn = DriverManager.getConnection(todoDatabase.DB_URL);
 
+        String todoBooleanTester = "Tester-1";
+        todoDatabase.insertToDo(conn, todoBooleanTester);
+
+        ArrayList<ToDoItem> todoBooleanTest = todoDatabase.selectToDos(conn);
+        boolean beforeBooleanTest = todoBooleanTest.get(0).isDone;
+
+        todoDatabase.toggleToDo(conn, todoBooleanTest.get(0).id);
+        todoBooleanTest = todoDatabase.selectToDos(conn);
+
+        assertTrue(beforeBooleanTest != todoBooleanTest.get(0).isDone);
+    }
 }

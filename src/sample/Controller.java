@@ -13,6 +13,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.ResourceBundle;
@@ -28,12 +30,28 @@ public class Controller implements Initializable {
     ObservableList<ToDoItem> todoItems = FXCollections.observableArrayList();
     ArrayList<ToDoItem> savableList = new ArrayList<ToDoItem>();
     String fileName = "todos.json";
+    ToDoDatabase myDatabase = new ToDoDatabase();
+    Connection conn = null;
 
     public String username;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
+        try {
+
+            conn = DriverManager.getConnection(myDatabase.DB_URL);
+            myDatabase.init();
+            savableList = myDatabase.selectToDos(conn);
+
+            for (ToDoItem currentItem : savableList) {
+                todoItems.add(currentItem);
+            }
+
+        } catch (Exception ex) {
+        }
+
+        /*
         System.out.print("Please enter your name: ");
         Scanner inputScanner = new Scanner(System.in);
         username = inputScanner.nextLine();
@@ -49,6 +67,7 @@ public class Controller implements Initializable {
                 todoItems.add(item);
             }
         }
+        */
 
         todoList.setItems(todoItems);
     }
@@ -65,24 +84,36 @@ public class Controller implements Initializable {
     }
 
     public void addItem() {
-        System.out.println("Adding item ...");
-        todoItems.add(new ToDoItem(todoText.getText()));
-        todoText.setText("");
+        try {
+            System.out.println("Adding item ...");
+            todoItems.add(new ToDoItem(todoText.getText()));
+            myDatabase.insertToDo(conn, todoText.getText());
+            todoText.setText("");
+        } catch (Exception ex) {
+        }
     }
 
     public void removeItem() {
-        ToDoItem todoItem = (ToDoItem)todoList.getSelectionModel().getSelectedItem();
-        System.out.println("Removing " + todoItem.text + " ...");
-        todoItems.remove(todoItem);
+        try {
+            ToDoItem todoItem = (ToDoItem) todoList.getSelectionModel().getSelectedItem();
+            System.out.println("Removing " + todoItem.text + " ...");
+            todoItems.remove(todoItem);
+            myDatabase.deleteToDo(conn, todoItem.text);
+        } catch (Exception ex) {
+        }
     }
 
     public void toggleItem() {
-        System.out.println("Toggling item ...");
-        ToDoItem todoItem = (ToDoItem)todoList.getSelectionModel().getSelectedItem();
-        if (todoItem != null) {
-            todoItem.isDone = !todoItem.isDone;
-            todoList.setItems(null);
-            todoList.setItems(todoItems);
+        try {
+            System.out.println("Toggling item ...");
+            ToDoItem todoItem = (ToDoItem) todoList.getSelectionModel().getSelectedItem();
+            if (todoItem != null) {
+                todoItem.isDone = !todoItem.isDone;
+                todoList.setItems(null);
+                todoList.setItems(todoItems);
+                myDatabase.toggleToDo(conn, todoItem.id);
+            }
+        } catch (Exception ex) {
         }
     }
 
@@ -95,6 +126,7 @@ public class Controller implements Initializable {
 
             System.out.println("JSON = ");
             System.out.println(jsonString);
+
 
             File sampleFile = new File(fileName);
             FileWriter jsonWriter = new FileWriter(sampleFile);
