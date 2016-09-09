@@ -37,12 +37,21 @@ public class Controller implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        Scanner inputScanner = new Scanner(System.in);
 
         try {
-
             conn = DriverManager.getConnection(myDatabase.DB_URL);
             myDatabase.init();
             savableList = myDatabase.selectToDos(conn);
+
+            System.out.println("What's your user name?");
+            String username = inputScanner.nextLine();
+
+            if (username != null) {
+                User myUser = myDatabase.selectUser(conn, username);
+            } else {
+            }
+
 
             for (ToDoItem currentItem : savableList) {
                 todoItems.add(currentItem);
@@ -87,7 +96,7 @@ public class Controller implements Initializable {
         try {
             System.out.println("Adding item ...");
             todoItems.add(new ToDoItem(todoText.getText()));
-            myDatabase.insertToDo(conn, todoText.getText());
+//            myDatabase.insertToDo(conn, todoText.getText());
             todoText.setText("");
         } catch (Exception ex) {
         }
