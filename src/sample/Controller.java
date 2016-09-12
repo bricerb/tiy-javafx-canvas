@@ -32,6 +32,7 @@ public class Controller implements Initializable {
     String fileName = "todos.json";
     ToDoDatabase myDatabase = new ToDoDatabase();
     Connection conn = null;
+    User myUser = null;
 
     public String username;
 
@@ -42,19 +43,33 @@ public class Controller implements Initializable {
         try {
             conn = DriverManager.getConnection(myDatabase.DB_URL);
             myDatabase.init();
-            savableList = myDatabase.selectToDos(conn);
+//            savableList = myDatabase.selectToDos(conn);
 
-            System.out.println("What's your user name?");
-            String username = inputScanner.nextLine();
+            System.out.println("Are you a new User? (y/n)");
+            String userInput = inputScanner.nextLine();
 
-            if (username != null) {
-                User myUser = myDatabase.selectUser(conn, username);
-            } else {
+            if (userInput.equals("y")) {
+                System.out.println("Please type your full name:");
+                String userFullName = inputScanner.nextLine();
+                System.out.println("Please select a user name:");
+                String userUserName = inputScanner.nextLine();
+                myDatabase.insertUser(conn, userUserName, userFullName);
+                myUser = myDatabase.selectUser(conn, userUserName);
+                System.out.println(myUser.getFullname() + "," + myUser.getUsername() + "," + myUser.getUserID());
             }
 
+            if (userInput.equals("n")) {
+                System.out.println("What's your user name?");
+                String username = inputScanner.nextLine();
 
-            for (ToDoItem currentItem : savableList) {
-                todoItems.add(currentItem);
+                myUser = myDatabase.selectUser(conn, username);
+
+                todoItems.addAll(myDatabase.selectToDosForUser(conn, myUser.getUserID()));
+
+
+                for (ToDoItem currentItem : savableList) {
+                    todoItems.add(currentItem);
+                }
             }
 
         } catch (Exception ex) {
@@ -86,7 +101,7 @@ public class Controller implements Initializable {
             System.out.println("Saving " + todoItems.size() + " items in the list");
             savableList = new ArrayList<ToDoItem>(todoItems);
             System.out.println("There are " + savableList.size() + " items in my savable list");
-            saveList();
+//            saveList();
         } else {
             System.out.println("No items in the ToDo List");
         }
@@ -96,7 +111,8 @@ public class Controller implements Initializable {
         try {
             System.out.println("Adding item ...");
             todoItems.add(new ToDoItem(todoText.getText()));
-//            myDatabase.insertToDo(conn, todoText.getText());
+            myDatabase.insertToDo(conn, todoText.getText(), myUser.getUserID());
+
             todoText.setText("");
         } catch (Exception ex) {
         }

@@ -99,8 +99,8 @@ public class ToDoDatabase {
         if (results != null) {
             while (results.next()) {
                 currentUser.setUserID(results.getInt("id"));
-                currentUser.setUsername("username");
-                currentUser.setFullname("fullname");
+                currentUser.setUsername(results.getString("username"));
+                currentUser.setFullname(results.getString("fullname"));
             }
         } else {
             currentUser = null;

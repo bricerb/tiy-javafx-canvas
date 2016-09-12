@@ -37,6 +37,7 @@ public class SampleFXMLApp extends Application {
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             public void handle(WindowEvent we) {
                 controller.saveList();
+
             }
         });
 
